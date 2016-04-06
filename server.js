@@ -8,35 +8,35 @@ var todoNextId = 1; //as we add todos they get new id
 
 app.use(bodyParser.json());
 
-// GET /todos
+// GET /todos?completed=true needs to be string true not boolean
 app.get('/todos', function(req, res){
-	res.json(todos);
+	var queryParams = req.query;
+	var filteredTodos = todos;
+	//console.log(queryParams); this was a test
+	//if has property && completed === 'true'
+	if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
+		filteredTodos = _.where(filteredTodos, {"completed": true});
+	}else if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
+		filteredTodos = _.where(filteredTodos, {"completed": false});
+	}else if(queryParams.hasOwnProperty('completed')){
+		return res.status(400).json({"error": "none found"});
+	}
+
+	res.json(filteredTodos);
 });
+
+
 // GET /todos/:id
 app.get('/todos/:id', function(req,res){
 	var todoID = req.params.id; //if we needed a === we would parseInt the string
 	var foundID = _.findWhere(todos, {id: todoID});
-
-
-	/*var foundID;
-	for(var i = 0; i < todos.length; i++){
-		if(todos[i].id == todoID){ //above here is what I am talking about
-			foundID = todos[i];
-		}
-	}*/
 
 	if(foundID){
 		res.json(foundID);
 	}else{
 		res.status(404).send();
 	}
-	
-	
-	//iterate over todos array. find match
-	//success response.json and pass todo item
-	//unsuccess res.status(404).send();
-	//res.send('Asking for todo with id of ' + req.params.id);
-})
+});
 
 
 
