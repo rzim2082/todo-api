@@ -38,7 +38,7 @@ app.get('/todos/:id', function(req,res){
 	//res.send('Asking for todo with id of ' + req.params.id);
 })
 
-//POST should look the same as get 
+
 
 app.post('/todos', function(req, res){
 	var body = _.pick(req.body, 'description', 'completed');
@@ -63,6 +63,19 @@ app.get('/', function(req, res){
 	res.send('Todo API Root');
 });
 
+//DELETE /todos/:id
+app.delete('/todos/:id', function(req,res){
+	var todoID = parseInt(req.params.id, 10);
+	var foundID = _.findWhere(todos, {id: todoID});
+	if(!foundID){
+		res.status(404).json({"error": "no todo found with that id"});
+	}else{
+		todos = _.without(todos, foundID);
+		res.status(200).json(foundID);
+	}
+
+	
+});
 
 app.listen(port, function(){
 	console.log('Express listening on ' + port);
