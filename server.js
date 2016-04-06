@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('underscore');
 var app = express();
 var port = process.env.PORT || 3000;
 var todos = [];
@@ -14,12 +15,16 @@ app.get('/todos', function(req, res){
 // GET /todos/:id
 app.get('/todos/:id', function(req,res){
 	var todoID = req.params.id; //if we needed a === we would parseInt the string
-	var foundID;
+	var foundID = _.findWhere(todos, {id: todoID});
+
+
+	/*var foundID;
 	for(var i = 0; i < todos.length; i++){
 		if(todos[i].id == todoID){ //above here is what I am talking about
 			foundID = todos[i];
 		}
-	}
+	}*/
+
 	if(foundID){
 		res.json(foundID);
 	}else{
@@ -36,7 +41,14 @@ app.get('/todos/:id', function(req,res){
 //POST should look the same as get 
 
 app.post('/todos', function(req, res){
-	var body = req.body;
+	var body = _.pick(req.body, 'description', 'completed');
+	//underscore pick ({what you want to check}, what you want to keep)
+	if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
+		return res.status(400).send();
+	}
+
+	// set body.description to be trim() value
+	body.description = body.description.trim();
 	body.id = todoNextId;
 	todoNextId++;
 	todos.push(body);
