@@ -1,21 +1,11 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var app = express();
 var port = process.env.PORT || 3000;
-var todos = [{
-	id: 1,
-	description: 'Meet mom for lunch',
-	completed: false
+var todos = [];
+var todoNextId = 1; //as we add todos they get new id
 
-},{
-	id: 2,
-	description: 'Go to market',
-	completed: false
-
-},{
-	id: 3,
-	description: 'Start Dinner',
-	completed: true
-}];
+app.use(bodyParser.json());
 
 // GET /todos
 app.get('/todos', function(req, res){
@@ -42,6 +32,19 @@ app.get('/todos/:id', function(req,res){
 	//unsuccess res.status(404).send();
 	//res.send('Asking for todo with id of ' + req.params.id);
 })
+
+//POST should look the same as get 
+
+app.post('/todos', function(req, res){
+	var body = req.body;
+	body.id = todoNextId;
+	todoNextId++;
+	todos.push(body);
+	//console.log('description: ' + body.description); //for testing
+	//console.log(body); //this is a test
+
+	res.json(body);
+});
 
 
 app.get('/', function(req, res){
