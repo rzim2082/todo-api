@@ -73,9 +73,42 @@ app.delete('/todos/:id', function(req,res){
 		todos = _.without(todos, foundID);
 		res.status(200).json(foundID);
 	}
-
-	
 });
+
+//PUT /todos/:id
+app.put('/todos/:id', function(req, res){
+	var todoID = parseInt(req.params.id, 10);
+	var foundID = _.findWhere(todos, {id: todoID});
+	var body = _.pick(req.body, 'description', 'completed');
+	var validAttributes = {};
+
+	if(!foundID){
+		return res.status(404).send();
+	}
+
+	//body.hasOwnProperty('completed') returns boolean
+	if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
+		validAttributes.completed = body.completed;
+	}else if (body.hasOwnProperty('completed')){
+		// Bad
+		return res.status(400).send();
+	}else {
+		// Never provided attribute, no problem here
+	}
+
+	if(body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0){
+		validAttributes.description = body.description;
+	}else if(body.hasOwnProperty('description')){
+		return res.status(400).send();
+	}else {
+		// Never provided attribute, no problem here
+	}
+	//Here
+	_.extend(foundID, validAttributes); //passed around variable no need to do anything else
+	res.json(foundID);
+
+});
+
 
 app.listen(port, function(){
 	console.log('Express listening on ' + port);
