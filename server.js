@@ -8,20 +8,30 @@ var todoNextId = 1; //as we add todos they get new id
 
 app.use(bodyParser.json());
 
-// GET /todos?completed=true needs to be string true not boolean
+// GET /todos?completed=true&q='string'
 app.get('/todos', function(req, res){
 	var queryParams = req.query;
+	console.log(queryParams);
 	var filteredTodos = todos;
-	//console.log(queryParams); this was a test
-	//if has property && completed === 'true'
+	
 	if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
 		filteredTodos = _.where(filteredTodos, {"completed": true});
 	}else if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
 		filteredTodos = _.where(filteredTodos, {"completed": false});
-	}else if(queryParams.hasOwnProperty('completed')){
+	}/*else if(queryParams.hasOwnProperty('completed')){
 		return res.status(400).json({"error": "none found"});
+	}*/
+	if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0){
+		//console.log('entered if statment');
+		filteredTodos = _.filter(filteredTodos, function(todo){
+			//console.log('enters filter');
+			return todo.description.toLowerCase()indexOf(queryParams.q.toLowerCase()) > -1;
+		});
 	}
-
+	// q property should exist and have a length > 0
+	//use filter
+	//"Go to work on Saturday".indexOf('work')
+	//console.log(filteredTodos);
 	res.json(filteredTodos);
 });
 
