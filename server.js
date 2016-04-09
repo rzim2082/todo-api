@@ -1,6 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
+var db = require('./db.js');
+
 var app = express();
 var port = process.env.PORT || 3000;
 var todos = [];
@@ -30,7 +32,7 @@ app.get('/todos', function(req, res) {
 		//console.log('entered if statment');
 		filteredTodos = _.filter(filteredTodos, function(todo) {
 			//console.log('enters filter');
-			return todo.description.toLowerCase() indexOf(queryParams.q.toLowerCase()) > -1;
+			return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
 		});
 	}
 	// q property should exist and have a length > 0
@@ -60,6 +62,11 @@ app.get('/todos/:id', function(req, res) {
 app.post('/todos', function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 	//underscore pick ({what you want to check}, what you want to keep)
+	/* 
+	call create on db.todo
+		respond with 200 and value of todo call .todo.json
+		fails call e res.status(400).json(e)
+
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
 		return res.status(400).send();
 	}
@@ -72,7 +79,14 @@ app.post('/todos', function(req, res) {
 	//console.log('description: ' + body.description); //for testing
 	//console.log(body); //this is a test
 
-	res.json(body);
+	res.json(body);*/
+	db.todo.create(body).then(function(todo){
+		return res.json(todo.toJSON()); //do .toJSON() because there is alot more stuff in there that might need to be formatted
+	}, function(e){
+		return res.status(400).json(e);
+
+	});
+
 });
 
 
@@ -132,7 +146,9 @@ app.put('/todos/:id', function(req, res) {
 
 });
 
-
-app.listen(port, function() {
+db.sequelize.sync().then(function(){
+	app.listen(port, function() {
 	console.log('Express listening on ' + port);
-})
+	});
+});
+
