@@ -14,8 +14,10 @@ app.use(bodyParser.json());
 app.get('/todos', function(req, res) {
 	var queryParams = req.query;
 	console.log(queryParams);
-	var filteredTodos = todos;
-
+	var where = {};
+	//var filteredTodos = todos;
+	/*
+	// var where = {};
 	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
 		filteredTodos = _.where(filteredTodos, {
 			"completed": true
@@ -24,22 +26,42 @@ app.get('/todos', function(req, res) {
 		filteredTodos = _.where(filteredTodos, {
 			"completed": false
 		});
+	}*/
+	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+		where.completed = true;
+	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
+		where.completed = false;
+	};
+	
+	if (queryParams.hasOwnProperty('q') && queryParams.q.length >0) {
+		where.description = {
+			$like: '%' + queryParams.q + '%' //this is basically a regexp
+		};
 	}
+
+	db.todo.findAll({where: where}).then(function(todos){
+		res.json(todos);
+	}, function(e){
+		res.status(500).send();
+	});
 	/*else if(queryParams.hasOwnProperty('completed')){
 			return res.status(400).json({"error": "none found"});
 		}*/
+	/*
 	if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
 		//console.log('entered if statment');
 		filteredTodos = _.filter(filteredTodos, function(todo) {
 			//console.log('enters filter');
 			return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
 		});
-	}
+	}*/
+	
 	// q property should exist and have a length > 0
 	//use filter
 	//"Go to work on Saturday".indexOf('work')
 	//console.log(filteredTodos);
-	res.json(filteredTodos);
+	
+	//res.json(where);
 });
 
 
