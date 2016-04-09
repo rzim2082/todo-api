@@ -46,7 +46,8 @@ app.get('/todos', function(req, res) {
 // GET /todos/:id
 app.get('/todos/:id', function(req, res) {
 	var todoID = req.params.id; //if we needed a === we would parseInt the string
-	var foundID = _.findWhere(todos, {
+	/*
+	var foundID = _.findWhere(db.todo, {
 		id: todoID
 	});
 
@@ -55,6 +56,17 @@ app.get('/todos/:id', function(req, res) {
 	} else {
 		res.status(404).send();
 	}
+	*/
+	db.todo.findById(todoID).then(function(todo){
+		if(!!todo){ //if you put !! this sets it to truthy, only run if todo item
+			res.json(todo);
+		} else {
+			res.status(404).send();
+		}
+		
+	}, function(e){
+		res.status(500).json(e);
+	});
 });
 
 
