@@ -14,7 +14,16 @@ module.exports = function(sequelize, DataTypes){
 			validate: {
 				len: [7, 100]    //this is length of password
 			}
+		}, {
+			hooks: {
+				beforeValidate: function(user, options) {
+					//user.email convert to lower case if only its a string
+					//true user.email to lower case
+					if(typeof user.email ==== 'string'){
+						user.email = user.email.toLowerCase();
+					}
+				}
+			}
 		}
-
 	});
 }
