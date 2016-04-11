@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 var db = require('./db.js');
+var bcrypt = require('bcrypt');
 
 var app = express();
 var port = process.env.PORT || 3000;
@@ -226,7 +227,44 @@ app.post('/users', function(req, res){
 
 });
 
-db.sequelize.sync(/*{force: true}*/).then(function(){ //this force is to make sure every password is salted and hashed
+//user login post/users/login
+
+app.post('/users/login', function(req, res){
+	var body = _.pick(req.body, 'email', 'password');
+
+	db.user.authenticate(body).then(function (user) {
+		res.json(user.toPublicJSON())
+	}, function () {
+		res.status(401).send();
+	});
+
+
+	/*
+	if(typeof body.email !== 'string' || typeof body.password !== 'string'){
+		return res.status(400).json({
+			error: 'invalid email or password'
+		});
+	}
+	/
+	db.user.findOne({
+		where: {email: body.email}
+	}).then(function(found){
+		if(!found || !bcrypt.compareSync(body.password, found.get('password_hash'))){ //compareSynce will run comparison between password and hashed and salted password
+			return res.status(401).send();
+		}
+
+		
+
+		res.status(200).json(found.toPublicJSON());
+		
+	}, function(e) {
+		res.status(500).send();
+	});
+	*/
+});
+
+
+db.sequelize.sync({force: true}).then(function(){ //this force is to make sure every password is salted and hashed
 	app.listen(port, function() {
 	console.log('Express listening on ' + port);
 	});
