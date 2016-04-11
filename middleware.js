@@ -25,15 +25,6 @@ module.exports = function (db) { //reason we set it to a function is so other fi
 				res.status(401).send();
 			});
 
-			/*
-			db.user.findByToken(token).then(function (user) {
-				req.user = user;
-				next();
-			}, function(){
-				
-				res.status(401).send();
-			});
-			*/
 		}
 	};
 

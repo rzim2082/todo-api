@@ -19,24 +19,13 @@ app.get('/', function(req, res) {
 	res.send('Todo API Root');
 });
 
-// GET /todos?completed=true&q='string'
+
 app.get('/todos', middleware.requireAuthentication, function(req, res) {
 	var queryParams = req.query;
 	console.log(queryParams);
 
 	var where = {userId: req.user.get('id')}; //req.user.get(id)
-	//var filteredTodos = todos;
-	/*
-	// var where = {};
-	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-		filteredTodos = _.where(filteredTodos, {
-			"completed": true
-		});
-	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-		filteredTodos = _.where(filteredTodos, {
-			"completed": false
-		});
-	}*/
+	
 	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
 		where.completed = true;
 	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
@@ -54,41 +43,14 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
 	}, function(e){
 		res.status(500).send();
 	});
-	/*else if(queryParams.hasOwnProperty('completed')){
-			return res.status(400).json({"error": "none found"});
-		}*/
-	/*
-	if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-		//console.log('entered if statment');
-		filteredTodos = _.filter(filteredTodos, function(todo) {
-			//console.log('enters filter');
-			return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-		});
-	}*/
 	
-	// q property should exist and have a length > 0
-	//use filter
-	//"Go to work on Saturday".indexOf('work')
-	//console.log(filteredTodos);
-	
-	//res.json(where);
 });
 
 
 // GET /todos/:id
 app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	var todoID = req.params.id; //if we needed a === we would parseInt the string
-	/*
-	var foundID = _.findWhere(db.todo, {
-		id: todoID
-	});
-
-	if (foundID) {
-		res.json(foundID);
-	} else {
-		res.status(404).send();
-	}
-	*/
+	
 	db.todo.findOne({
 		where: {
 			id: todoID,
@@ -110,27 +72,9 @@ app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
 
 app.post('/todos', middleware.requireAuthentication, function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
-	//underscore pick ({what you want to check}, what you want to keep)
-	/* 
-	call create on db.todo
-		respond with 200 and value of todo call .todo.json
-		fails call e res.status(400).json(e)
-
-	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-		return res.status(400).send();
-	}
-
-	// set body.description to be trim() value
-	body.description = body.description.trim();
-	body.id = todoNextId;
-	todoNextId++;
-	todos.push(body);
-	//console.log('description: ' + body.description); //for testing
-	//console.log(body); //this is a test
-
-	res.json(body);*/
+	
 	db.todo.create(body).then(function(todo){
-		//return res.json(todo.toJSON()); //do .toJSON() because there is alot more stuff in there that might need to be formatted
+		
 		req.user.addTodo(todo).then(function(){
 			return todo.reload();
 		}).then(function(todo){
@@ -146,23 +90,10 @@ app.post('/todos', middleware.requireAuthentication, function(req, res) {
 
 
 
-//DELETE /todos/:id
+
 app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	var todoID = parseInt(req.params.id, 10);
 	
-	/*
-	var foundID = _.findWhere(todos, {
-		id: todoID
-	});
-	if (!foundID) {
-		res.status(404).json({
-			"error": "no todo found with that id"
-		});
-	} else {
-		todos = _.without(todos, foundID);
-		res.status(200).json(foundID);
-	}
-	*/
 	db.todo.destroy({
 		where: {
 			id: todoID,
@@ -185,37 +116,17 @@ app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 //PUT /todos/:id
 app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	var todoID = parseInt(req.params.id, 10);
-	/*
-	var foundID = _.findWhere(todos, {
-		id: todoID
-	});*/
+	
 	var body = _.pick(req.body, 'description', 'completed');
 	var validAttributes = {};
-	/*
-	if (!foundID) {
-		return res.status(404).send();
-	}
-	*/
-	//body.hasOwnProperty('completed') returns boolean
-	if (body.hasOwnProperty('completed') /*&& _.isBoolean(body.completed)*/) {
+	
+	if (body.hasOwnProperty('completed')) {
 		validAttributes.completed = body.completed;
-	} /*else if (body.hasOwnProperty('completed')) {
-		// Bad
-		return res.status(400).send();
-	} else {
-		// Never provided attribute, no problem here
-	}*/
+	} 
 
-	if (body.hasOwnProperty('description') /*&& _.isString(body.description) && body.description.trim().length > 0*/) {
+	if (body.hasOwnProperty('description') ) {
 		validAttributes.description = body.description;
-	} /*else if (body.hasOwnProperty('description')) {
-		return res.status(400).send();
-	} else {
-		// Never provided attribute, no problem here
-	}*/
-	//Here
-	/*_.extend(foundID, validAttributes); //passed around variable no need to do anything else
-	res.json(foundID);*/
+	} 
 
 	db.todo.findOne({
 		where: {
@@ -250,7 +161,7 @@ app.post('/users', function(req, res){
 
 });
 
-//user login post/users/login
+
 
 app.post('/users/login', function(req, res){
 	var body = _.pick(req.body, 'email', 'password');
@@ -264,14 +175,6 @@ app.post('/users/login', function(req, res){
 			token: token
 		});
 
-		/*
-		if(token){
-			res.header('Auth', token).json(user.toPublicJSON())
-		} else {
-			res.status(401).send();
-		}
-		*/
-
 	}).then(function(tokenInstance){
 		res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
 	}).catch(function() {
@@ -279,31 +182,9 @@ app.post('/users/login', function(req, res){
 	});
 
 
-	/* all of this has been moved to user.js user.authenticate method
-	if(typeof body.email !== 'string' || typeof body.password !== 'string'){
-		return res.status(400).json({
-			error: 'invalid email or password'
-		});
-	}
-	/
-	db.user.findOne({
-		where: {email: body.email}
-	}).then(function(found){
-		if(!found || !bcrypt.compareSync(body.password, found.get('password_hash'))){ //compareSynce will run comparison between password and hashed and salted password
-			return res.status(401).send();
-		}
-
-		
-
-		res.status(200).json(found.toPublicJSON());
-		
-	}, function(e) {
-		res.status(500).send();
-	});
-	*/
 });
 
-//Delete /users/login delete login instance
+
 app.delete('/users/login', middleware.requireAuthentication, function(req, res){
 	req.token.destroy().then(function(){
 		res.status(204).send();
