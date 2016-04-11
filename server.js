@@ -233,13 +233,13 @@ app.post('/users/login', function(req, res){
 	var body = _.pick(req.body, 'email', 'password');
 
 	db.user.authenticate(body).then(function (user) {
-		res.json(user.toPublicJSON())
+		res.header('Auth', user.generateToken('authentication')).json(user.toPublicJSON())
 	}, function () {
 		res.status(401).send();
 	});
 
 
-	/*
+	/* all of this has been moved to user.js user.authenticate method
 	if(typeof body.email !== 'string' || typeof body.password !== 'string'){
 		return res.status(400).json({
 			error: 'invalid email or password'
