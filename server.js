@@ -23,7 +23,8 @@ app.get('/', function(req, res) {
 app.get('/todos', middleware.requireAuthentication, function(req, res) {
 	var queryParams = req.query;
 	console.log(queryParams);
-	var where = {};
+
+	var where = {userId: req.user.get('id')}; //req.user.get(id)
 	//var filteredTodos = todos;
 	/*
 	// var where = {};
@@ -88,7 +89,12 @@ app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
 		res.status(404).send();
 	}
 	*/
-	db.todo.findById(todoID).then(function(todo){
+	db.todo.findOne({
+		where: {
+			id: todoID,
+			userId: req.user.get('id')
+		}
+	}).then(function(todo){
 		if(!!todo){ //if you put !! this sets it to truthy, only run if todo item
 			res.json(todo);
 		} else {
@@ -159,7 +165,8 @@ app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	*/
 	db.todo.destroy({
 		where: {
-			id: todoID
+			id: todoID,
+			userId: req.user.get('id')
 		}
 	}).then(function(rowsDeleted){
 		if(rowsDeleted === 0){
@@ -210,7 +217,12 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	/*_.extend(foundID, validAttributes); //passed around variable no need to do anything else
 	res.json(foundID);*/
 
-	db.todo.findById(todoID).then(function(todo){
+	db.todo.findOne({
+		where: {
+			id: todoID,
+			userId: req.user.get('id')
+		}
+	}).then(function(todo){
 		if(todo){
 			todo.update(validAttributes)
 				.then(function(todo){
@@ -282,7 +294,11 @@ app.post('/users/login', function(req, res){
 });
 
 
-db.sequelize.sync({force: true}).then(function(){ //this force is to make sure every password is salted and hashed
+db.sequelize.sync({
+	force: true, 
+	logging: console.log
+	})
+	.then(function(){ //this force is to make sure every password is salted and hashed
 	app.listen(port, function() {
 	console.log('Express listening on ' + port);
 	});
